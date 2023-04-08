@@ -16,6 +16,12 @@
 
 {% row %}
     {% col %}
+        {% include "blog/post-comments.html" %}
+    {% endcol %}
+{% endrow %}
+
+{% row %}
+    {% col %}
         {% recent_posts post %}
     {% endcol %}
 {% endrow %}
