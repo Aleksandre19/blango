@@ -15,7 +15,20 @@ def index(request):
   # AnonymousUser f not logged-in
   # from django.http import HttpResponse
   # return HttpResponse(str(request.user).encode("ascii"))
-  posts = Post.objects.filter(published_at__lte=timezone.now())
+
+  # posts = (
+  #   Post.objects.filter(published_at__lte=timezone.now())
+  #   .select_related('author')
+  #   .only('title', 'summary','content', 'author', 'slug')
+  # )
+
+  # posts = (
+  #   Post.objects.filter(published_at__lte=timezone.now())
+  #   .select_related("author")
+  #   .defer("created_at", "modified_at", 'published_at')
+  # )
+  
+  posts = Post.objects.filter(published_at__lte=timezone.now()).select_related("author")
   logger.debug("Got %d posts", len(posts))
   return render(request, "blog/index.html", {"posts": posts})
 
@@ -46,3 +59,8 @@ def post_detail(request, slug):
   return render(
     request, "blog/post-detail.html", {"post": post, "comment_form": comment_form}
   )
+
+# Return the IP address which is connected to Django
+def get_ip(request):
+  from django.http import HttpResponse
+  return HttpResponse(request.META['REMOTE_ADDR'])
