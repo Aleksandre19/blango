@@ -34,6 +34,12 @@ class PostSerializer(serializers.ModelSerializer):
     slug_field='value', many=True, queryset=Tag.objects.all()
   )
 
+  author = serializers.HyperlinkedRelatedField(
+      queryset=User.objects.all(),
+      view_name="api_user_detail",
+      lookup_field="email"
+  )
+
   class Meta:
     model = Post
     fields = '__all__'
