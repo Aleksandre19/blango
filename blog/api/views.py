@@ -1,3 +1,4 @@
+from blog.api.filters import PostFilterSet
 from rest_framework import generics, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -27,9 +28,17 @@ class TagViewSet(viewsets.ModelViewSet):
   queryset = Tag.objects.all()
   serializer_class = TagSerializer
 
-  @action(methods=['GET'], detail=True, name="Posts with the tag")
+  @action(methods=['get'], detail=True, name="Posts with the tag")
   def posts(self, request, pk=None):
     tag = self.get_object()
+    #paginate
+    page = self.paginate_queryset(tag.posts)
+    if page is not None:
+      post_serializer(
+        page=True, many=True, context={'request': request}
+      )
+      return selg.get_paginated_response(post_serializer.data)
+
     post_serializer = PostSerializer(
       tag.posts, many=True, context={"request": request}
     )
@@ -44,6 +53,9 @@ class TagViewSet(viewsets.ModelViewSet):
       return super(TagViewSet, self).retrieve(*args, **kwargs)
 
 class PostViewSet(viewsets.ModelViewSet):
+    # filterset_fields = ['author', 'tags']
+    ordering_fields = ["published_at", "author", "title", "slug"]
+    filterset_class = PostFilterSet
     permission_classes = [AuthorModifyOrReadOnly | IsAdminUserForObject]
     queryset = Post.objects.all()
 
@@ -58,10 +70,19 @@ class PostViewSet(viewsets.ModelViewSet):
     @action(methods=['get'], detail=False, name="Posts by logged in users")
     def main(self, request):
       if request.user.is_anonymous:
-        raise PermssionDenied("Yous must bew logged in to see which posts are yours")
+        raise PermissionDenied("Yous must bew logged in to see which posts are yours")
+      
       posts = self.get_queryset().filter(author=request.user)
+      # paginate
+
+      page = self.paginate_queryset(posts)
+      if page is not None:
+        serializer = PostSerializer(page, many=True, context={"request" : request})
+        return self.get_paginated_response(serializer.data)
+      
       serializer = PostSerializer(posts, many=True, context={"request" : request})
       return Response(serializer.data)
+
     def get_queryset(self):
       if self.request.user.is_anonymous:
           # published only
