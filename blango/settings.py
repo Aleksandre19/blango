@@ -39,6 +39,9 @@ class Dev(Configuration):
 
     ACCOUNT_ACTIVATION_DAYS = 7
 
+    MEDIA_ROOT = BASE_DIR / "media"
+    MEDIA_URL = "/media/"
+
     # REGISTRATION_OPEN = False
 
     LOGGING = {
@@ -145,6 +148,7 @@ class Dev(Configuration):
         'rest_framework.authtoken',
         'drf_yasg',
         'django_filters',
+        'versatileimagefield',
 
     ]
 
